@@ -45,25 +45,25 @@ resource "azurerm_public_ip" "pip" {
   resource_group_name = local.resource_group.name
 }
 
-#module "openai" {
-#  source = "../openai"
-#
-#  resource_group_name = local.resource_group.name
-#  location = local.resource_group.location
-#  public_network_access_enabled = true
-#  deployment = {
-#    "gpt-35-turbo" = {
-#      name          = "gpt-35-turbo"
-#      model_format  = "OpenAI"
-#      model_name    = "gpt-35-turbo"
-#      model_version = "0301"
-#      scale_type    = "Standard"
-#    }
-#  }
-#  depends_on = [
-#    azurerm_resource_group.rg
-#  ]
-#}
+module "openai" {
+  source = "../openai"
+
+  resource_group_name = local.resource_group.name
+  location = local.resource_group.location
+  public_network_access_enabled = true
+  deployment = {
+    "gpt-35-turbo" = {
+      name          = "gpt-35-turbo"
+      model_format  = "OpenAI"
+      model_name    = "gpt-35-turbo"
+      model_version = "0301"
+      scale_type    = "Standard"
+    }
+  }
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
+}
 
 module "linux" {
   source = "../virtual_machine"
@@ -164,6 +164,22 @@ resource "azurerm_network_security_group" "nsg" {
       source_address_prefix      = "*"
     }
   }
+
+  dynamic "security_rule" {
+    for_each = var.create_public_ip ? ["Icmp"] : []
+
+    content {
+      access                     = "Allow"
+      direction                  = "Inbound"
+      name                       = "Icmp"
+      priority                   = 203
+      protocol                   = "Icmp"
+      destination_address_prefix = "*"
+      destination_port_range     = "*"
+      source_port_range          = "*"
+      source_address_prefix      = "*"
+    }
+  }
 }
 
 resource "azurerm_network_interface_security_group_association" "linux_nic" {
@@ -177,5 +193,6 @@ resource "azurerm_network_interface_security_group_association" "linux_nic" {
 resource "local_file" "ssh_private_key" {
   filename = "${path.module}/key.pem"
   content  = tls_private_key.ssh.private_key_pem
+  file_permission = "0400"
 }
 

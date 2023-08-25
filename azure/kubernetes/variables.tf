@@ -10,7 +10,7 @@ variable "location" {
 
 variable "resource_group_name" {
   type = string
-  default = "ansible-test-rg"
+  default = "kubernetes-the-kubespray-way"
 }
 
 variable "create_public_ip" {
@@ -20,30 +20,28 @@ variable "create_public_ip" {
 
 variable "publicIpInstanceCount" {
   type = object({
-    ubuntu = number
-    centos = number
-    windows = number
+    controller = number
+    worker = number
   })
   default = {
-    ubuntu = 1
-    centos = null
-    windows = null
+    controller = 3
+    worker = 3
   }
 }
 
 variable "size" {
   type = string
-  default = "Standard_B1ls"
+  default = "Standard_B1s"
 }
 
 variable "linux_instance_count" {
   type = object({
-    ubuntu = number
-    centos = number
+    controller = number
+    worker = number
   })
   default = {
-    ubuntu = 1
-    centos = null
+    controller = 3
+    worker = 3
   }
 }
 
